@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Route Calculator - Roshi Transport Corporation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #FFF8E7 0%, #F5E6D3 100%);
+            min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 90px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #2C1810;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 4px 20px rgba(255, 165, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 14px;
+            font-weight: 400;
+            color: #5D4037;
+        }
+
+        .content-wrapper {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 8px 32px rgba(255, 165, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .input-section {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+            border-bottom: 3px solid #FFE4B5;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        input {
+            padding: 16px 18px;
+            border: 2px solid #FFE4B5;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+            color: #2C1810;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
+        }
+
+        .calculate-btn {
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #2C1810;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 165, 0, 0.5);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .navigate-btn {
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .navigate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .route-info {
+            display: none;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
+            border: 3px solid #4CAF50;
+        }
+
+        .route-info.active {
+            display: block;
+        }
+
+        .route-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .route-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1B5E20;
+            margin-bottom: 6px;
+        }
+
+        .route-subtitle {
+            font-size: 12px;
+            color: #2E7D32;
+            font-weight: 500;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #5D4037;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2C1810;
+        }
+
+        .route-points {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .route-point {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #FFE4B5;
+        }
+
+        .route-point:last-child {
+            border-bottom: none;
+        }
+
+        .route-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .route-icon.origin {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+        }
+
+        .route-icon.destination {
+            background: linear-gradient(135deg, #F44336 0%, #EF5350 100%);
+            color: white;
+        }
+
+        .route-text {
+            flex: 1;
+        }
+
+        .route-label {
+            font-size: 10px;
+            color: #8D6E63;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .route-address {
+            font-size: 14px;
+            color: #2C1810;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .landmarks-btn {
+            padding: 14px 30px;
+            background: white;
+            color: #2C1810;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .landmarks-btn:hover {
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+        }
+
+        .landmarks-section {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #FFE4B5;
+        }
+
+        .landmarks-section.active {
+            display: block;
+        }
+
+        .landmarks-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 5px;
+        }
+
+        .landmarks-subtitle {
+            font-size: 11px;
+            color: #8D6E63;
+            margin-bottom: 15px;
+        }
+
+        .landmark-item {
+            padding: 12px;
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .landmark-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .landmark-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 2px;
+        }
+
+        .landmark-type {
+            font-size: 11px;
+            color: #5D4037;
+            font-weight: 500;
+        }
+
+        .map-container {
+            padding: 25px 20px;
+            background: white;
+        }
+
+        #map {
+            width: 100%;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .disclaimer {
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+            border-left: 5px solid #FFD700;
+            padding: 20px;
+            margin: 0;
+            font-size: 12px;
+            color: #5D4037;
+            line-height: 1.6;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #FFCDD2 0%, #EF9A9A 100%);
+            border: 3px solid #F44336;
+            color: #B71C1C;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #FFE4B5;
+            border-top: 5px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: #5D4037;
+            font-weight: 600;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #2C1810 0%, #5D4037 100%);
+            color: #FFE4B5;
+            text-align: center;
+            padding: 12px 15px;
+            font-size: 10px;
+            font-weight: 400;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            line-height: 1.5;
+        }
+
+        .footer-separator {
+            margin: 0 6px;
+            opacity: 0.5;
+        }
+
+        .suggestion-list {
+            position: absolute;
+            background: white;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            width: 100%;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 20px rgba(255, 165, 0, 0.3);
+            top: 100%;
+            margin-top: 5px;
+        }
+
+        .suggestion-list.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 14px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #FFE4B5;
+            font-size: 14px;
+            color: #2C1810;
+        }
+
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E7 100%);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .suggestion-detail {
+            font-size: 11px;
+            color: #8D6E63;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                padding-bottom: 80px;
+            }
+
+            .header {
+                padding: 40px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .input-section {
+                padding: 40px;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr 1fr auto;
+                gap: 20px;
+                align-items: end;
+            }
+
+            .calculate-btn {
+                margin-top: 0;
+                white-space: nowrap;
+            }
+
+            .route-info {
+                padding: 30px 40px;
+            }
+
+            .route-title {
+                font-size: 24px;
+            }
+
+            .route-subtitle {
+                font-size: 14px;
+            }
+
+            .route-stats {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 20px;
+            }
+
+            .stat-value {
+                font-size: 28px;
+            }
+
+            .map-container {
+                padding: 40px;
+            }
+
+            #map {
+                height: 600px;
+            }
+
+            .disclaimer {
+                padding: 25px 40px;
+                font-size: 13px;
+            }
+
+            .footer {
+                padding: 15px 20px;
+                font-size: 11px;
+            }
+
+            .navigate-btn {
+                width: auto;
+            }
+        }
+
+        /* Leaflet attribution override */
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Approved Route Calculator</h1>
+            <p>Authoritative Distance & Route for Commercial Transport Billing</p>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="input-section">
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Origin (City or Location)</label>
+                        <input type="text" id="origin" placeholder="e.g., Mumbai, Maharashtra" autocomplete="off">
+                        <div class="suggestion-list" id="originSuggestions"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Destination (City or Location)</label>
+                        <input type="text" id="destination" placeholder="e.g., Delhi, India" autocomplete="off">
+                        <div class="suggestion-list" id="destinationSuggestions"></div>
+                    </div>
+                    <button class="calculate-btn" id="calculateBtn">Calculate Route</button>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Calculating Approved Route...</div>
+            </div>
+
+            <div class="route-info" id="routeInfo">
+                <div class="route-header">
+                    <div class="route-title">✓ Approved Route – Reliable, Safe & Shortest</div>
+                    <div class="route-subtitle">This is the ONLY authorized route for billing and trip planning</div>
+                </div>
+                <div class="route-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Distance</div>
+                        <div class="stat-value" id="distance">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Estimated Time</div>
+                        <div class="stat-value" id="duration">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Est. Toll Points</div>
+                        <div class="stat-value" id="tolls">—</div>
+                    </div>
+                </div>
+                <div class="route-points">
+                    <div class="route-point">
+                        <div class="route-icon origin">A</div>
+                        <div class="route-text">
+                            <div class="route-label">Origin Point</div>
+                            <div class="route-address" id="originAddress">—</div>
+                        </div>
+                    </div>
+                    <div class="route-point">
+                        <div class="route-icon destination">B</div>
+                        <div class="route-text">
+                            <div class="route-label">Destination Point</div>
+                            <div class="route-address" id="destinationAddress">—</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="landmarks-btn" id="landmarksBtn">VIEW ROUTE LANDMARKS</button>
+                <div class="landmarks-section" id="landmarksSection">
+                    <div class="landmarks-title">Key Checkpoints Along Route</div>
+                    <div class="landmarks-subtitle">Estimated major landmarks and waypoints</div>
+                    <div id="landmarksList"></div>
+                </div>
+                <button class="navigate-btn" id="navigateBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    NAVIGATE ME
+                </button>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div class="disclaimer">
+                Billing and trip planning are calculated strictly as per this Approved Route. Alternate routes are not considered. This route represents the most reliable, safe, and shortest practical path for commercial vehicles.
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        All rights reserved © Roshi Transport Corporation<span class="footer-separator">|</span>Map data © OpenStreetMap contributors<span class="footer-separator">|</span>Powered by Leaflet
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Global variables
+        let map;
+        let routeLayer;
+        let originMarker;
+        let destinationMarker;
+        let originCoords = null;
+        let destinationCoords = null;
+        let searchTimeout;
+        let currentRouteData = null;
+
+        // Initialize map without default attribution
+        function initMap() {
+            map = L.map('map', {
+                attributionControl: false // Disable default attribution
+            }).setView([20.5937, 78.9629], 5);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // Handle orientation change
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 200);
+            });
+        }
+
+        // Search location using Nominatim (supports all of India including remote areas)
+        async function searchLocation(query, callback) {
+            if (query.length < 3) {
+                callback([]);
+                return;
+            }
+
+            try {
+                // Search with India country code for comprehensive coverage
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=8&addressdetails=1`
+                );
+                const data = await response.json();
+                callback(data);
+            } catch (error) {
+                console.error('Search error:', error);
+                callback([]);
+            }
+        }
+
+        // Setup autocomplete for input fields
+        function setupAutocomplete(inputId, suggestionsId, coordsCallback) {
+            const input = document.getElementById(inputId);
+            const suggestionsList = document.getElementById(suggestionsId);
+
+            input.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 3) {
+                    suggestionsList.classList.remove('active');
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    searchLocation(query, function(results) {
+                        suggestionsList.innerHTML = '';
+                        
+                        if (results.length === 0) {
+                            suggestionsList.classList.remove('active');
+                            return;
+                        }
+
+                        results.forEach(result => {
+                            const item = document.createElement('div');
+                            item.className = 'suggestion-item';
+                            
+                            const name = document.createElement('div');
+                            name.className = 'suggestion-name';
+                            name.textContent = result.display_name.split(',')[0];
+                            
+                            const detail = document.createElement('div');
+                            detail.className = 'suggestion-detail';
+                            detail.textContent = result.display_name;
+                            
+                            item.appendChild(name);
+                            item.appendChild(detail);
+                            
+                            item.addEventListener('click', function() {
+                                input.value = result.display_name;
+                                coordsCallback({
+                                    lat: parseFloat(result.lat),
+                                    lon: parseFloat(result.lon),
+                                    name: result.display_name
+                                });
+                                suggestionsList.classList.remove('active');
+                            });
+                            
+                            suggestionsList.appendChild(item);
+                        });
+                        
+                        suggestionsList.classList.add('active');
+                    });
+                }, 300);
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !suggestionsList.contains(e.target)) {
+                    suggestionsList.classList.remove('active');
+                }
+            });
+        }
+
+        // Calculate route using OSRM (open-source routing)
+        async function calculateRoute() {
+            if (!originCoords || !destinationCoords) {
+                showError('Please select both origin and destination from the suggestions');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            document.getElementById('routeInfo').classList.remove('active');
+            document.getElementById('calculateBtn').disabled = true;
+
+            try {
+                // Use OSRM for deep route discovery with alternatives
+                const response = await fetch(
+                    `https://router.project-osrm.org/route/v1/driving/${originCoords.lon},${originCoords.lat};${destinationCoords.lon},${destinationCoords.lat}?overview=full&geometries=geojson&steps=true&alternatives=true`
+                );
+                
+                const data = await response.json();
+                
+                if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+                    throw new Error('No route found');
+                }
+
+                // Select the best route (OSRM returns sorted by duration, first is best)
+                currentRouteData = data.routes[0];
+                displayRoute(currentRouteData);
+                await findLandmarks(currentRouteData);
+            } catch (error) {
+                showError('Could not calculate route. Please try different locations.');
+                console.error('Routing error:', error);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('calculateBtn').disabled = false;
+            }
+        }
+
+        // Display route on map
+        function displayRoute(route) {
+            // Clear existing route and markers
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+            if (originMarker) {
+                map.removeLayer(originMarker);
+            }
+            if (destinationMarker) {
+                map.removeLayer(destinationMarker);
+            }
+
+            // Draw route with prominent styling
+            const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+            routeLayer = L.polyline(coordinates, {
+                color: '#FFD700',
+                weight: 6,
+                opacity: 0.8
+            }).addTo(map);
+
+            // Add custom markers
+            originMarker = L.marker([originCoords.lat, originCoords.lon], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">A</div>',
+                    iconSize: [35, 35]
+                })
+            }).addTo(map);
+
+            destinationMarker = L.marker([destinationCoords.lat, destinationCoords.lon], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: linear-gradient(135deg, #F44336 0%, #EF5350 100%); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">B</div>',
+                    iconSize: [35, 35]
+                })
+            }).addTo(map);
+
+            // Fit map to route bounds
+            map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+
+            // Calculate and display route statistics
+            const distanceKm = (route.distance / 1000).toFixed(1);
+            const durationHours = Math.floor(route.duration / 3600);
+            const durationMinutes = Math.floor((route.duration % 3600) / 60);
+            
+            // Estimate toll points based on distance (rough estimate: 1 toll per 100km on highways)
+            const estimatedTolls = Math.max(1, Math.floor(route.distance / 100000));
+            
+            document.getElementById('distance').textContent = distanceKm + ' km';
+            document.getElementById('duration').textContent = 
+                durationHours > 0 
+                    ? `${durationHours}h ${durationMinutes}m` 
+                    : `${durationMinutes}m`;
+            document.getElementById('tolls').textContent = estimatedTolls;
+            document.getElementById('originAddress').textContent = originCoords.name;
+            document.getElementById('destinationAddress').textContent = destinationCoords.name;
+            
+            document.getElementById('routeInfo').classList.add('active');
+        }
+
+        // Find landmarks along route
+        async function findLandmarks(route) {
+            try {
+                // Get points along the route (sample 5-6 key points)
+                const coords = route.geometry.coordinates;
+                const totalPoints = coords.length;
+                const sampleIndices = [
+                    Math.floor(totalPoints * 0.2),
+                    Math.floor(totalPoints * 0.35),
+                    Math.floor(totalPoints * 0.5),
+                    Math.floor(totalPoints * 0.65),
+                    Math.floor(totalPoints * 0.8)
+                ];
+
+                const landmarks = [];
+                
+                for (let i = 0; i < sampleIndices.length && i < 6; i++) {
+                    const idx = sampleIndices[i];
+                    const [lon, lat] = coords[idx];
+                    
+                    // Reverse geocode to find place name
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`
+                    );
+                    const data = await response.json();
+                    
+                    if (data && data.display_name) {
+                        const parts = data.display_name.split(',');
+                        const name = parts[0].trim() || parts[1]?.trim() || 'Checkpoint';
+                        const type = data.address?.city ? 'City' : 
+                                   data.address?.town ? 'Town' : 
+                                   data.address?.village ? 'Village' :
+                                   data.address?.industrial ? 'Industrial Area' :
+                                   'Waypoint';
+                        
+                        landmarks.push({ name, type });
+                    }
+                    
+                    // Delay to respect rate limits
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                displayLandmarks(landmarks);
+            } catch (error) {
+                console.error('Landmark search error:', error);
+                displayLandmarks([]);
+            }
+        }
+
+        // Display landmarks in the UI
+        function displayLandmarks(landmarks) {
+            const landmarksList = document.getElementById('landmarksList');
+            landmarksList.innerHTML = '';
+            
+            if (landmarks.length === 0) {
+                landmarksList.innerHTML = '<div style="text-align: center; color: #8D6E63; font-size: 12px; padding: 10px;">No landmarks found along this route</div>';
+                return;
+            }
+            
+            landmarks.forEach(landmark => {
+                const item = document.createElement('div');
+                item.className = 'landmark-item';
+                
+                const name = document.createElement('div');
+                name.className = 'landmark-name';
+                name.textContent = landmark.name;
+                
+                const type = document.createElement('div');
+                type.className = 'landmark-type';
+                type.textContent = landmark.type;
+                
+                item.appendChild(name);
+                item.appendChild(type);
+                landmarksList.appendChild(item);
+            });
+        }
+
+        // Navigate with Google Maps (URL parameters only, no API)
+        function navigateWithGoogleMaps() {
+            if (!originCoords || !destinationCoords) {
+                showError('Route not calculated yet');
+                return;
+            }
+            
+            // Build Google Maps navigation URL with prefilled origin and destination
+            const origin = `${originCoords.lat},${originCoords.lon}`;
+            const destination = `${destinationCoords.lat},${destinationCoords.lon}`;
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+            
+            // Open in new tab
+            window.open(url, '_blank');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            setTimeout(() => {
+                errorDiv.classList.remove('active');
+            }, 5000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            initMap();
+            
+            // Setup autocomplete for both inputs
+            setupAutocomplete('origin', 'originSuggestions', function(coords) {
+                originCoords = coords;
+            });
+            
+            setupAutocomplete('destination', 'destinationSuggestions', function(coords) {
+                destinationCoords = coords;
+            });
+            
+            // Calculate route button
+            document.getElementById('calculateBtn').addEventListener('click', calculateRoute);
+            
+            // Navigate button
+            document.getElementById('navigateBtn').addEventListener('click', navigateWithGoogleMaps);
+            
+            // Landmarks toggle button
+            document.getElementById('landmarksBtn').addEventListener('click', function() {
+                const section = document.getElementById('landmarksSection');
+                section.classList.toggle('active');
+                this.textContent = section.classList.contains('active') 
+                    ? 'HIDE ROUTE LANDMARKS' 
+                    : 'VIEW ROUTE LANDMARKS';
+            });
+            
+            // Handle Enter key in origin input
+            document.getElementById('origin').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('destination').focus();
+                }
+            });
+            
+            // Handle Enter key in destination input
+            document.getElementById('destination').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (originCoords && destinationCoords) {
+                        calculateRoute();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
