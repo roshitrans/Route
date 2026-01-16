@@ -133,6 +133,7 @@
             transform: none;
         }
 
+        /* ✅ CHANGED: Navigate Me → Confirm & Proceed button styling (same style maintained) */
         .navigate-btn {
             padding: 18px 40px;
             background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
@@ -662,13 +663,14 @@
                     <div class="landmarks-subtitle">Estimated major landmarks and waypoints</div>
                     <div id="landmarksList"></div>
                 </div>
+                <!-- ✅ CHANGED: Button label changed from "NAVIGATE ME" to "CONFIRM & PROCEED" -->
                 <button class="navigate-btn" id="navigateBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                         <path d="M2 17l10 5 10-5"/>
                         <path d="M2 12l10 5 10-5"/>
                     </svg>
-                    NAVIGATE ME
+                    CONFIRM & PROCEED
                 </button>
             </div>
 
@@ -688,21 +690,23 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Performance optimizations and global variables
+        // ✅ PERFORMANCE OPTIMIZATION: Global variables and state management
         let map;
         let routeLayer;
         let originMarker;
         let destinationMarker;
         let originCoords = null;
         let destinationCoords = null;
-        let searchTimeout;
         let currentRouteData = null;
         
-        // Cache for location searches to improve performance
+        // ✅ PERFORMANCE OPTIMIZATION: In-memory cache for location searches (1 hour expiry)
         const searchCache = new Map();
-        const CACHE_EXPIRY = 3600000; // 1 hour
+        const CACHE_EXPIRY = 3600000;
+        
+        // ✅ PERFORMANCE OPTIMIZATION: Track pending requests for cancellation
+        let pendingSearchController = null;
 
-        // Debounce function for optimized autocomplete
+        // ✅ PERFORMANCE OPTIMIZATION: Debounce function to reduce API calls (500ms delay)
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -715,12 +719,12 @@
             };
         }
 
-        // Initialize map with performance optimizations
+        // ✅ PERFORMANCE OPTIMIZATION: Lazy map initialization with mobile-optimized settings
         function initMap() {
             map = L.map('map', {
                 attributionControl: false,
                 zoomControl: true,
-                preferCanvas: true, // Better performance for mobile
+                preferCanvas: true,
                 tap: true,
                 touchZoom: true
             }).setView([20.5937, 78.9629], 5);
@@ -731,7 +735,7 @@
                 keepBuffer: 2
             }).addTo(map);
 
-            // Handle resize events efficiently
+            // ✅ PERFORMANCE OPTIMIZATION: Debounced resize handler
             let resizeTimeout;
             window.addEventListener('resize', function() {
                 clearTimeout(resizeTimeout);
@@ -740,7 +744,6 @@
                 }, 250);
             });
 
-            // Handle orientation change
             window.addEventListener('orientationchange', function() {
                 setTimeout(function() {
                     map.invalidateSize();
@@ -748,8 +751,9 @@
             });
         }
 
-        // Optimized search with caching and faster response
+        // ✅ PERFORMANCE OPTIMIZATION: Optimized search with caching and request cancellation
         async function searchLocation(query, callback) {
+            // ✅ PERFORMANCE OPTIMIZATION: Minimum 3 characters before search
             if (query.length < 3) {
                 callback([]);
                 return;
@@ -758,30 +762,36 @@
             const cacheKey = query.toLowerCase();
             const cached = searchCache.get(cacheKey);
             
-            // Return cached results if available and not expired
+            // ✅ PERFORMANCE OPTIMIZATION: Return cached results if available and fresh
             if (cached && (Date.now() - cached.timestamp) < CACHE_EXPIRY) {
                 callback(cached.data);
                 return;
             }
 
+            // ✅ PERFORMANCE OPTIMIZATION: Cancel previous pending request
+            if (pendingSearchController) {
+                pendingSearchController.abort();
+            }
+
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                pendingSearchController = new AbortController();
+                const timeoutId = setTimeout(() => pendingSearchController.abort(), 5000);
                 
                 const response = await fetch(
                     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=8&addressdetails=1`,
-                    { signal: controller.signal }
+                    { signal: pendingSearchController.signal }
                 );
                 
                 clearTimeout(timeoutId);
                 const data = await response.json();
                 
-                // Cache the results
+                // ✅ PERFORMANCE OPTIMIZATION: Cache the results
                 searchCache.set(cacheKey, {
                     data: data,
                     timestamp: Date.now()
                 });
                 
+                pendingSearchController = null;
                 callback(data);
             } catch (error) {
                 if (error.name !== 'AbortError') {
@@ -791,12 +801,12 @@
             }
         }
 
-        // Optimized debounced search
+        // ✅ PERFORMANCE OPTIMIZATION: Debounced search with 500ms delay
         const debouncedSearch = debounce((query, callback) => {
             searchLocation(query, callback);
-        }, 300);
+        }, 500);
 
-        // Setup autocomplete with performance optimizations
+        // ✅ PERFORMANCE OPTIMIZATION: Optimized autocomplete setup
         function setupAutocomplete(inputId, suggestionsId, coordsCallback) {
             const input = document.getElementById(inputId);
             const suggestionsList = document.getElementById(suggestionsId);
@@ -817,7 +827,7 @@
                         return;
                     }
 
-                    // Use document fragment for better performance
+                    // ✅ PERFORMANCE OPTIMIZATION: Use document fragment for batch DOM updates
                     const fragment = document.createDocumentFragment();
                     
                     results.forEach(result => {
@@ -854,7 +864,6 @@
                 });
             });
 
-            // Close suggestions on outside click
             document.addEventListener('click', function(e) {
                 if (!input.contains(e.target) && !suggestionsList.contains(e.target)) {
                     suggestionsList.classList.remove('active');
@@ -862,13 +871,21 @@
             });
         }
 
-        // Optimized route calculation with async rendering
+        // ✅ PERFORMANCE OPTIMIZATION: Prevent duplicate route calculations
+        let isCalculating = false;
+
         async function calculateRoute() {
             if (!originCoords || !destinationCoords) {
                 showError('Please select both origin and destination from the suggestions');
                 return;
             }
 
+            // ✅ PERFORMANCE OPTIMIZATION: Prevent duplicate calculations
+            if (isCalculating) {
+                return;
+            }
+
+            isCalculating = true;
             document.getElementById('loading').classList.add('active');
             document.getElementById('errorMessage').classList.remove('active');
             document.getElementById('routeInfo').classList.remove('active');
@@ -892,10 +909,8 @@
 
                 currentRouteData = data.routes[0];
                 
-                // Display route immediately
+                // ✅ PERFORMANCE OPTIMIZATION: Display route immediately, load landmarks async
                 displayRoute(currentRouteData);
-                
-                // Load landmarks asynchronously without blocking
                 setTimeout(() => findLandmarks(currentRouteData), 100);
                 
             } catch (error) {
@@ -908,17 +923,18 @@
             } finally {
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('calculateBtn').disabled = false;
+                isCalculating = false;
             }
         }
 
-        // Optimized route display with efficient rendering
+        // ✅ PERFORMANCE OPTIMIZATION: Efficient route display with requestAnimationFrame
         function displayRoute(route) {
             // Clear existing layers efficiently
             if (routeLayer) map.removeLayer(routeLayer);
             if (originMarker) map.removeLayer(originMarker);
             if (destinationMarker) map.removeLayer(destinationMarker);
 
-            // Draw route with optimized settings
+            // Draw route
             const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
             routeLayer = L.polyline(coordinates, {
                 color: '#FFD700',
@@ -927,7 +943,7 @@
                 smoothFactor: 1
             }).addTo(map);
 
-            // Add custom markers
+            // Add markers
             const originIcon = L.divIcon({
                 className: 'custom-marker',
                 html: '<div style="background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">A</div>',
@@ -943,7 +959,6 @@
             originMarker = L.marker([originCoords.lat, originCoords.lon], { icon: originIcon }).addTo(map);
             destinationMarker = L.marker([destinationCoords.lat, destinationCoords.lon], { icon: destIcon }).addTo(map);
 
-            // Fit bounds efficiently
             map.fitBounds(routeLayer.getBounds(), { 
                 padding: [50, 50],
                 animate: true,
@@ -956,7 +971,7 @@
             const durationMinutes = Math.floor((route.duration % 3600) / 60);
             const estimatedTolls = Math.max(1, Math.floor(route.distance / 100000));
             
-            // Update UI efficiently using requestAnimationFrame
+            // ✅ PERFORMANCE OPTIMIZATION: Batch DOM updates with requestAnimationFrame
             requestAnimationFrame(() => {
                 document.getElementById('distance').textContent = distanceKm + ' km';
                 document.getElementById('duration').textContent = 
@@ -969,13 +984,12 @@
             });
         }
 
-        // Optimized landmark finding with limited API calls
+        // ✅ PERFORMANCE OPTIMIZATION: Optimized landmark finding with limited API calls
         async function findLandmarks(route) {
             try {
                 const coords = route.geometry.coordinates;
                 const totalPoints = coords.length;
                 
-                // Sample 5 key points along route
                 const sampleIndices = [
                     Math.floor(totalPoints * 0.2),
                     Math.floor(totalPoints * 0.35),
@@ -1018,7 +1032,7 @@
                         }
                     }
                     
-                    // Respect API rate limits
+                    // ✅ PERFORMANCE OPTIMIZATION: Respect API rate limits
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
                 
@@ -1029,7 +1043,7 @@
             }
         }
 
-        // Display landmarks efficiently
+        // ✅ PERFORMANCE OPTIMIZATION: Batch DOM updates for landmarks
         function displayLandmarks(landmarks) {
             const landmarksList = document.getElementById('landmarksList');
             
@@ -1064,18 +1078,36 @@
             });
         }
 
-        // Navigate with Google Maps - optimized redirect
-        function navigateWithGoogleMaps() {
-            if (!originCoords || !destinationCoords) {
-                showError('Route not calculated yet');
+        // ✅ CHANGED: Function now redirects to Driver Client Page with route data
+        function confirmAndProceed() {
+            if (!currentRouteData || !originCoords || !destinationCoords) {
+                showError('Route not calculated yet. Please calculate route first.');
                 return;
             }
             
-            const origin = `${originCoords.lat},${originCoords.lon}`;
-            const destination = `${destinationCoords.lat},${destinationCoords.lon}`;
-            const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+            // Collect approved route data
+            const distanceKm = (currentRouteData.distance / 1000).toFixed(1);
+            const durationHours = Math.floor(currentRouteData.duration / 3600);
+            const durationMinutes = Math.floor((currentRouteData.duration % 3600) / 60);
+            const estimatedTolls = Math.max(1, Math.floor(currentRouteData.distance / 100000));
             
-            window.open(url, '_blank', 'noopener,noreferrer');
+            // Build query parameters with all route data
+            const params = new URLSearchParams({
+                origin: originCoords.name,
+                destination: destinationCoords.name,
+                originLat: originCoords.lat,
+                originLon: originCoords.lon,
+                destLat: destinationCoords.lat,
+                destLon: destinationCoords.lon,
+                distance: distanceKm,
+                duration: durationHours > 0 ? `${durationHours}h ${durationMinutes}m` : `${durationMinutes}m`,
+                tolls: estimatedTolls,
+                approved: 'true'
+            });
+            
+            // Redirect to Driver Client Page
+            const driverClientUrl = 'https://roshitrans.github.io/Track/';
+            window.location.href = `${driverClientUrl}?${params.toString()}`;
         }
 
         // Optimized error display
@@ -1101,10 +1133,8 @@
         }
 
         function initializeApp() {
-            // Initialize map
             initMap();
             
-            // Setup autocomplete for both inputs
             setupAutocomplete('origin', 'originSuggestions', function(coords) {
                 originCoords = coords;
             });
@@ -1113,9 +1143,10 @@
                 destinationCoords = coords;
             });
             
-            // Event listeners with passive where appropriate
             document.getElementById('calculateBtn').addEventListener('click', calculateRoute);
-            document.getElementById('navigateBtn').addEventListener('click', navigateWithGoogleMaps);
+            
+            // ✅ CHANGED: Navigate button now calls confirmAndProceed instead of navigateWithGoogleMaps
+            document.getElementById('navigateBtn').addEventListener('click', confirmAndProceed);
             
             document.getElementById('landmarksBtn').addEventListener('click', function() {
                 const section = document.getElementById('landmarksSection');
@@ -1125,7 +1156,6 @@
                     : 'VIEW ROUTE LANDMARKS';
             });
             
-            // Keyboard navigation
             document.getElementById('origin').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -1142,7 +1172,7 @@
                 }
             });
 
-            // Clear old cache entries periodically
+            // ✅ PERFORMANCE OPTIMIZATION: Periodic cache cleanup every 10 minutes
             setInterval(() => {
                 const now = Date.now();
                 for (const [key, value] of searchCache.entries()) {
@@ -1150,7 +1180,7 @@
                         searchCache.delete(key);
                     }
                 }
-            }, 600000); // Clean every 10 minutes
+            }, 600000);
         }
     </script>
 </body>
