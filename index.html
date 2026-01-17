@@ -133,7 +133,6 @@
             transform: none;
         }
 
-        /* ✅ CHANGED: Navigate Me → Confirm & Proceed button styling (same style maintained) */
         .navigate-btn {
             padding: 18px 40px;
             background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
@@ -162,11 +161,16 @@
             transform: translateY(1px);
         }
 
+        /* 🔧 MOBILE FIX: Approved Route section - prevent overflow and ensure proper stacking */
         .route-info {
             display: none;
             padding: 25px 20px;
             background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
             border: 3px solid #4CAF50;
+            /* 🔧 MOBILE FIX: Prevent horizontal overflow */
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
         }
 
         .route-info.active {
@@ -176,6 +180,9 @@
         .route-header {
             text-align: center;
             margin-bottom: 20px;
+            /* 🔧 MOBILE FIX: Prevent text overflow */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .route-title {
@@ -183,12 +190,19 @@
             font-weight: 700;
             color: #1B5E20;
             margin-bottom: 6px;
+            /* 🔧 MOBILE FIX: Ensure title wraps on small screens */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .route-subtitle {
             font-size: 12px;
             color: #2E7D32;
             font-weight: 500;
+            /* 🔧 MOBILE FIX: Ensure subtitle wraps properly */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .route-stats {
@@ -196,6 +210,9 @@
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
+            /* 🔧 MOBILE FIX: Prevent stats grid overflow */
+            width: 100%;
+            max-width: 100%;
         }
 
         .stat-card {
@@ -204,6 +221,9 @@
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            /* 🔧 MOBILE FIX: Prevent card overflow */
+            min-width: 0;
+            word-wrap: break-word;
         }
 
         .stat-label {
@@ -212,12 +232,18 @@
             font-weight: 600;
             text-transform: uppercase;
             margin-bottom: 6px;
+            /* 🔧 MOBILE FIX: Ensure labels don't overflow */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .stat-value {
             font-size: 24px;
             font-weight: 700;
             color: #2C1810;
+            /* 🔧 MOBILE FIX: Prevent value overflow */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .route-points {
@@ -225,6 +251,9 @@
             padding: 15px;
             border-radius: 10px;
             margin-top: 15px;
+            /* 🔧 MOBILE FIX: Prevent route points overflow */
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .route-point {
@@ -233,6 +262,9 @@
             gap: 12px;
             padding: 10px 0;
             border-bottom: 1px solid #FFE4B5;
+            /* 🔧 MOBILE FIX: Ensure proper wrapping */
+            flex-wrap: nowrap;
+            min-width: 0;
         }
 
         .route-point:last-child {
@@ -264,6 +296,9 @@
         .route-text {
             flex: 1;
             min-width: 0;
+            /* 🔧 MOBILE FIX: Ensure text wraps and doesn't overflow */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .route-label {
@@ -271,6 +306,8 @@
             color: #8D6E63;
             font-weight: 600;
             text-transform: uppercase;
+            /* 🔧 MOBILE FIX: Prevent label overflow */
+            word-wrap: break-word;
         }
 
         .route-address {
@@ -279,6 +316,9 @@
             font-weight: 500;
             margin-top: 2px;
             word-wrap: break-word;
+            /* 🔧 MOBILE FIX: Enhanced wrapping for long addresses */
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .landmarks-btn {
@@ -309,6 +349,9 @@
             border-radius: 10px;
             margin-top: 15px;
             border: 2px solid #FFE4B5;
+            /* 🔧 MOBILE FIX: Prevent landmarks overflow */
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .landmarks-section.active {
@@ -320,12 +363,16 @@
             font-weight: 700;
             color: #2C1810;
             margin-bottom: 5px;
+            /* 🔧 MOBILE FIX: Ensure title wraps */
+            word-wrap: break-word;
         }
 
         .landmarks-subtitle {
             font-size: 11px;
             color: #8D6E63;
             margin-bottom: 15px;
+            /* 🔧 MOBILE FIX: Ensure subtitle wraps */
+            word-wrap: break-word;
         }
 
         .landmark-item {
@@ -334,6 +381,10 @@
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid #FFD700;
+            /* 🔧 MOBILE FIX: Prevent landmark item overflow */
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .landmark-item:last-child {
@@ -345,12 +396,17 @@
             font-weight: 600;
             color: #2C1810;
             margin-bottom: 2px;
+            /* 🔧 MOBILE FIX: Ensure landmark names wrap */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .landmark-type {
             font-size: 11px;
             color: #5D4037;
             font-weight: 500;
+            /* 🔧 MOBILE FIX: Ensure types wrap */
+            word-wrap: break-word;
         }
 
         .map-container {
@@ -492,6 +548,149 @@
             color: #8D6E63;
         }
 
+        /* 🔧 MOBILE-SPECIFIC OPTIMIZATIONS (max-width: 768px) */
+        @media (max-width: 768px) {
+            /* 🔧 MOBILE FIX: Reduce header padding on small screens */
+            .header h1 {
+                font-size: 22px;
+                line-height: 1.3;
+            }
+
+            .header p {
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize route info padding for mobile */
+            .route-info {
+                padding: 20px 15px;
+            }
+
+            /* 🔧 MOBILE FIX: Stack route title on very small screens */
+            .route-title {
+                font-size: 18px;
+                line-height: 1.3;
+            }
+
+            .route-subtitle {
+                font-size: 11px;
+                line-height: 1.4;
+            }
+
+            /* 🔧 MOBILE FIX: Ensure stat cards stack properly on narrow screens */
+            .route-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize stat card sizing for mobile */
+            .stat-card {
+                padding: 15px 12px;
+            }
+
+            .stat-value {
+                font-size: 22px;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize route points spacing */
+            .route-points {
+                padding: 12px;
+            }
+
+            .route-point {
+                gap: 10px;
+                padding: 8px 0;
+            }
+
+            /* 🔧 MOBILE FIX: Reduce icon size slightly on very small screens */
+            .route-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 13px;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize address font sizing */
+            .route-address {
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            /* 🔧 MOBILE FIX: Ensure buttons are finger-friendly */
+            .navigate-btn {
+                font-size: 15px;
+                padding: 16px 30px;
+                letter-spacing: 0.3px;
+            }
+
+            .landmarks-btn {
+                font-size: 13px;
+                padding: 12px 20px;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize landmarks section */
+            .landmarks-section {
+                padding: 15px;
+            }
+
+            .landmarks-title {
+                font-size: 15px;
+            }
+
+            .landmarks-subtitle {
+                font-size: 10px;
+            }
+
+            .landmark-item {
+                padding: 10px;
+            }
+
+            .landmark-name {
+                font-size: 13px;
+            }
+
+            .landmark-type {
+                font-size: 10px;
+            }
+
+            /* 🔧 MOBILE FIX: Optimize map height for mobile */
+            #map {
+                height: 350px;
+            }
+        }
+
+        /* 🔧 MOBILE FIX: Extra small screens (360px-430px) - Common Android phones */
+        @media (max-width: 430px) {
+            .route-title {
+                font-size: 16px;
+            }
+
+            .route-stats {
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 12px 10px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+            }
+
+            .route-address {
+                font-size: 12px;
+            }
+
+            .navigate-btn {
+                font-size: 14px;
+                padding: 14px 25px;
+            }
+        }
+
+        /* Desktop optimizations (unchanged) */
         @media (min-width: 768px) {
             body {
                 padding: 20px;
@@ -663,7 +862,6 @@
                     <div class="landmarks-subtitle">Estimated major landmarks and waypoints</div>
                     <div id="landmarksList"></div>
                 </div>
-                <!-- ✅ CHANGED: Button label changed from "NAVIGATE ME" to "CONFIRM & PROCEED" -->
                 <button class="navigate-btn" id="navigateBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -690,7 +888,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ✅ PERFORMANCE OPTIMIZATION: Global variables and state management
         let map;
         let routeLayer;
         let originMarker;
@@ -699,14 +896,11 @@
         let destinationCoords = null;
         let currentRouteData = null;
         
-        // ✅ PERFORMANCE OPTIMIZATION: In-memory cache for location searches (1 hour expiry)
         const searchCache = new Map();
         const CACHE_EXPIRY = 3600000;
         
-        // ✅ PERFORMANCE OPTIMIZATION: Track pending requests for cancellation
         let pendingSearchController = null;
 
-        // ✅ PERFORMANCE OPTIMIZATION: Debounce function to reduce API calls (500ms delay)
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -719,7 +913,6 @@
             };
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Lazy map initialization with mobile-optimized settings
         function initMap() {
             map = L.map('map', {
                 attributionControl: false,
@@ -735,7 +928,6 @@
                 keepBuffer: 2
             }).addTo(map);
 
-            // ✅ PERFORMANCE OPTIMIZATION: Debounced resize handler
             let resizeTimeout;
             window.addEventListener('resize', function() {
                 clearTimeout(resizeTimeout);
@@ -751,9 +943,7 @@
             });
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Optimized search with caching and request cancellation
         async function searchLocation(query, callback) {
-            // ✅ PERFORMANCE OPTIMIZATION: Minimum 3 characters before search
             if (query.length < 3) {
                 callback([]);
                 return;
@@ -762,13 +952,11 @@
             const cacheKey = query.toLowerCase();
             const cached = searchCache.get(cacheKey);
             
-            // ✅ PERFORMANCE OPTIMIZATION: Return cached results if available and fresh
             if (cached && (Date.now() - cached.timestamp) < CACHE_EXPIRY) {
                 callback(cached.data);
                 return;
             }
 
-            // ✅ PERFORMANCE OPTIMIZATION: Cancel previous pending request
             if (pendingSearchController) {
                 pendingSearchController.abort();
             }
@@ -785,7 +973,6 @@
                 clearTimeout(timeoutId);
                 const data = await response.json();
                 
-                // ✅ PERFORMANCE OPTIMIZATION: Cache the results
                 searchCache.set(cacheKey, {
                     data: data,
                     timestamp: Date.now()
@@ -801,12 +988,10 @@
             }
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Debounced search with 500ms delay
         const debouncedSearch = debounce((query, callback) => {
             searchLocation(query, callback);
         }, 500);
 
-        // ✅ PERFORMANCE OPTIMIZATION: Optimized autocomplete setup
         function setupAutocomplete(inputId, suggestionsId, coordsCallback) {
             const input = document.getElementById(inputId);
             const suggestionsList = document.getElementById(suggestionsId);
@@ -827,7 +1012,6 @@
                         return;
                     }
 
-                    // ✅ PERFORMANCE OPTIMIZATION: Use document fragment for batch DOM updates
                     const fragment = document.createDocumentFragment();
                     
                     results.forEach(result => {
@@ -871,7 +1055,6 @@
             });
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Prevent duplicate route calculations
         let isCalculating = false;
 
         async function calculateRoute() {
@@ -880,7 +1063,6 @@
                 return;
             }
 
-            // ✅ PERFORMANCE OPTIMIZATION: Prevent duplicate calculations
             if (isCalculating) {
                 return;
             }
@@ -909,7 +1091,6 @@
 
                 currentRouteData = data.routes[0];
                 
-                // ✅ PERFORMANCE OPTIMIZATION: Display route immediately, load landmarks async
                 displayRoute(currentRouteData);
                 setTimeout(() => findLandmarks(currentRouteData), 100);
                 
@@ -927,14 +1108,11 @@
             }
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Efficient route display with requestAnimationFrame
         function displayRoute(route) {
-            // Clear existing layers efficiently
             if (routeLayer) map.removeLayer(routeLayer);
             if (originMarker) map.removeLayer(originMarker);
             if (destinationMarker) map.removeLayer(destinationMarker);
 
-            // Draw route
             const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
             routeLayer = L.polyline(coordinates, {
                 color: '#FFD700',
@@ -943,7 +1121,6 @@
                 smoothFactor: 1
             }).addTo(map);
 
-            // Add markers
             const originIcon = L.divIcon({
                 className: 'custom-marker',
                 html: '<div style="background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">A</div>',
@@ -965,13 +1142,11 @@
                 duration: 0.5
             });
 
-            // Calculate statistics
             const distanceKm = (route.distance / 1000).toFixed(1);
             const durationHours = Math.floor(route.duration / 3600);
             const durationMinutes = Math.floor((route.duration % 3600) / 60);
             const estimatedTolls = Math.max(1, Math.floor(route.distance / 100000));
             
-            // ✅ PERFORMANCE OPTIMIZATION: Batch DOM updates with requestAnimationFrame
             requestAnimationFrame(() => {
                 document.getElementById('distance').textContent = distanceKm + ' km';
                 document.getElementById('duration').textContent = 
@@ -984,7 +1159,6 @@
             });
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Optimized landmark finding with limited API calls
         async function findLandmarks(route) {
             try {
                 const coords = route.geometry.coordinates;
@@ -1032,7 +1206,6 @@
                         }
                     }
                     
-                    // ✅ PERFORMANCE OPTIMIZATION: Respect API rate limits
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
                 
@@ -1043,7 +1216,6 @@
             }
         }
 
-        // ✅ PERFORMANCE OPTIMIZATION: Batch DOM updates for landmarks
         function displayLandmarks(landmarks) {
             const landmarksList = document.getElementById('landmarksList');
             
@@ -1078,20 +1250,17 @@
             });
         }
 
-        // ✅ CHANGED: Function now redirects to Driver Client Page with route data
         function confirmAndProceed() {
             if (!currentRouteData || !originCoords || !destinationCoords) {
                 showError('Route not calculated yet. Please calculate route first.');
                 return;
             }
             
-            // Collect approved route data
             const distanceKm = (currentRouteData.distance / 1000).toFixed(1);
             const durationHours = Math.floor(currentRouteData.duration / 3600);
             const durationMinutes = Math.floor((currentRouteData.duration % 3600) / 60);
             const estimatedTolls = Math.max(1, Math.floor(currentRouteData.distance / 100000));
             
-            // Build query parameters with all route data
             const params = new URLSearchParams({
                 origin: originCoords.name,
                 destination: destinationCoords.name,
@@ -1105,12 +1274,10 @@
                 approved: 'true'
             });
             
-            // Redirect to Driver Client Page
             const driverClientUrl = 'https://roshitrans.github.io/Track/';
             window.location.href = `${driverClientUrl}?${params.toString()}`;
         }
 
-        // Optimized error display
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             requestAnimationFrame(() => {
@@ -1125,7 +1292,6 @@
             }, 5000);
         }
 
-        // Initialize on DOM ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initializeApp);
         } else {
@@ -1145,7 +1311,6 @@
             
             document.getElementById('calculateBtn').addEventListener('click', calculateRoute);
             
-            // ✅ CHANGED: Navigate button now calls confirmAndProceed instead of navigateWithGoogleMaps
             document.getElementById('navigateBtn').addEventListener('click', confirmAndProceed);
             
             document.getElementById('landmarksBtn').addEventListener('click', function() {
@@ -1172,7 +1337,6 @@
                 }
             });
 
-            // ✅ PERFORMANCE OPTIMIZATION: Periodic cache cleanup every 10 minutes
             setInterval(() => {
                 const now = Date.now();
                 for (const [key, value] of searchCache.entries()) {
